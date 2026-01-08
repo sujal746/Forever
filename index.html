@@ -1,212 +1,337 @@
-import React, { useState } from 'react';
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Will You Be My Forever?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-// Custom Icon Component to replace external dependencies and avoid CDN errors
-const Icon = ({ name, size = 24, className = "", fill = "none", color = "currentColor", strokeWidth = 2 }) => {
-  const icons = {
-    heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />,
-    mail: (
-      <>
-        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-        <rect width="20" height="16" x="2" y="4" rx="2" />
-      </>
-    ),
-    sparkles: <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />,
-    stars: (
-      <>
-        <path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
-      </>
-    ),
-    gift: (
-      <>
-        <rect x="3" y="8" width="18" height="4" rx="1" />
-        <path d="M12 8v13" /><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
-      </>
-    ),
-    chevronRight: <path d="m9 18 6-6-6-6" />,
-    map: (
-      <>
-        <path d="M14.1 22 7.85 18.15a1 1 0 0 0-1.1 0L2.5 21V5.5l3.85-2.15a1 1 0 0 1-1.1 0L14.1 7.15a1 1 0 0 0 1.1 0L19.5 5v15.5l-3.85 2.15a1 1 0 0 1-1.1 0Z" />
-        <path d="M8 5.5v12.5" /><path d="M16 8.5v12.5" />
-      </>
-    )
-  };
+    <!-- React + ReactDOM from CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill={fill}
-      stroke={color}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      {icons[name]}
-    </svg>
-  );
-};
+    <!-- Babel so we can write JSX in this file -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-const App = () => {
-  const [stage, setStage] = useState('closed'); 
-  const [reasonIndex, setReasonIndex] = useState(0);
-  const [noCount, setNoCount] = useState(0);
-  const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 });
-  const [isNoMoving, setIsNoMoving] = useState(false);
+    <!-- Tailwind CDN for styling (optional but matches your classes) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  const reasons = [
-    { text: "I love your beautiful smile that lights up my whole world...", icon: <Icon name="sparkles" className="text-yellow-400" size={40} /> },
-    { text: "I love how you always know exactly how to make me laugh...", icon: <Icon name="gift" className="text-purple-400" size={40} /> },
-    { text: "I love all the little adventures we've been on together...", icon: <Icon name="map" className="text-green-400" size={40} /> },
-    { text: "And most of all, I love how you make me a better person every day.", icon: <Icon name="heart" className="text-red-500" fill="currentColor" size={40} /> }
-  ];
+    <style>
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .animate-spin-slow {
+        animation: spin-slow 10s linear infinite;
+      }
+      @keyframes bounce-in {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); opacity: 1; }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); }
+      }
+      .animate-bounce-in {
+        animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+    </style>
+  </head>
 
-  const noMessages = [
-    "No 🥺", "Are you sure? 💔", "Pwease? 👉👈", "Really? 😢", "Think again! 🧸", 
-    "I'll be sad... 😿", "Wait! 🖐️", "Click Yes! ✨", "Are you absolute certain?", "Change of heart?"
-  ];
+  <body class="min-h-screen bg-[#fff5f8] flex items-center justify-center">
+    <div id="root"></div>
 
-  const handleNoInteraction = () => {
-    setNoCount(prev => prev + 1);
-    const padding = 100;
-    const x = Math.random() * (window.innerWidth - padding * 2) + padding;
-    const y = Math.random() * (window.innerHeight - padding * 2) + padding;
-    setNoButtonPos({ x, y });
-    setIsNoMoving(true);
-  };
+    <script type="text/babel">
+      const { useState } = React;
 
-  const nextReason = () => {
-    if (reasonIndex < reasons.length - 1) {
-      setReasonIndex(prev => prev + 1);
-    } else {
-      setStage('proposing');
-    }
-  };
+      const Icon = ({
+        name,
+        size = 24,
+        className = "",
+        fill = "none",
+        color = "currentColor",
+        strokeWidth = 2,
+      }) => {
+        const icons = {
+          heart: (
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          ),
+          mail: (
+            <>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+            </>
+          ),
+          sparkles: (
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+          ),
+          stars: (
+            <>
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+            </>
+          ),
+          gift: (
+            <>
+              <rect x="3" y="8" width="18" height="4" rx="1" />
+              <path d="M12 8v13" />
+              <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+            </>
+          ),
+          chevronRight: <path d="m9 18 6-6-6-6" />,
+          map: (
+            <>
+              <path d="M14.1 22 7.85 18.15a1 1 0 0 0-1.1 0L2.5 21V5.5l3.85-2.15a1 1 0 0 1 1.1 0L14.1 7.15a1 1 0 0 0 1.1 0L19.5 5v15.5l-3.85 2.15a1 1 0 0 1-1.1 0Z" />
+              <path d="M8 5.5v12.5" />
+              <path d="M16 8.5v12.5" />
+            </>
+          ),
+        };
 
-  return (
-    <div className="min-h-screen bg-[#fff5f8] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
-      <style>
-        {`
-          @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          .animate-spin-slow {
-            animation: spin-slow 10s linear infinite;
-          }
-          @keyframes bounce-in {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); opacity: 1; }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-          }
-          .animate-bounce-in {
-            animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-          }
-        `}
-      </style>
-      
-      {/* Stage 1: The Sealed Letter */}
-      {stage === 'closed' && (
-        <div className="flex flex-col items-center animate-bounce-in">
-          <div 
-            onClick={() => setStage('reasons')}
-            className="group cursor-pointer bg-white p-12 sm:p-16 rounded-[3rem] shadow-2xl transition-all hover:scale-105 active:scale-95 relative border-4 border-pink-100"
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill={fill}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
           >
-            <div className="absolute -top-6 -right-6 bg-pink-500 text-white p-4 rounded-full animate-bounce shadow-lg">
-              <Icon name="mail" size={32} />
-            </div>
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center">
-                <Icon name="heart" size={48} className="text-pink-500 group-hover:scale-110 transition-transform" />
+            {icons[name]}
+          </svg>
+        );
+      };
+
+      const ProposalPage = () => {
+        const [stage, setStage] = useState("closed");
+        const [reasonIndex, setReasonIndex] = useState(0);
+        const [noCount, setNoCount] = useState(0);
+        const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 });
+        const [isNoMoving, setIsNoMoving] = useState(false);
+
+        const reasons = [
+          {
+            text: "I love your beautiful smile that lights up my whole world...",
+            icon: <Icon name="sparkles" className="text-yellow-400" size={40} />,
+          },
+          {
+            text: "I love how you always know exactly how to make me laugh...",
+            icon: <Icon name="gift" className="text-purple-400" size={40} />,
+          },
+          {
+            text: "I love all the little adventures we've been on together...",
+            icon: <Icon name="map" className="text-green-400" size={40} />,
+          },
+          {
+            text: "And most of all, I love how you make me a better person every day.",
+            icon: (
+              <Icon
+                name="heart"
+                className="text-red-500"
+                fill="currentColor"
+                size={40}
+              />
+            ),
+          },
+        ];
+
+        const noMessages = [
+          "No 🥺",
+          "Are you sure? 💔",
+          "Pwease? 👉👈",
+          "Really? 😢",
+          "Think again! 🧸",
+          "I'll be sad... 😿",
+          "Wait! 🖐️",
+          "Click Yes! ✨",
+          "Are you absolute certain?",
+          "Change of heart?",
+        ];
+
+        const handleNoInteraction = () => {
+          setNoCount((prev) => prev + 1);
+          const padding = 100;
+          const x = Math.random() * (window.innerWidth - padding * 2) + padding;
+          const y = Math.random() * (window.innerHeight - padding * 2) + padding;
+          setNoButtonPos({ x, y });
+          setIsNoMoving(true);
+        };
+
+        const nextReason = () => {
+          if (reasonIndex < reasons.length - 1) {
+            setReasonIndex((prev) => prev + 1);
+          } else {
+            setStage("proposing");
+          }
+        };
+
+        return (
+          <div className="min-h-screen bg-[#fff5f8] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+            {/* Stage 1: The Sealed Letter */}
+            {stage === "closed" && (
+              <div className="flex flex-col items-center animate-bounce-in">
+                <div
+                  onClick={() => setStage("reasons")}
+                  className="group cursor-pointer bg-white p-12 sm:p-16 rounded-[3rem] shadow-2xl transition-all hover:scale-105 active:scale-95 relative border-4 border-pink-100"
+                >
+                  <div className="absolute -top-6 -right-6 bg-pink-500 text-white p-4 rounded-full animate-bounce shadow-lg">
+                    <Icon name="mail" size={32} />
+                  </div>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center">
+                      <Icon
+                        name="heart"
+                        size={48}
+                        className="text-pink-500 group-hover:scale-110 transition-transform"
+                      />
+                    </div>
+                    <p className="text-2xl font-bold text-pink-600 italic">
+                      For Someone Special
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-10 text-pink-400 font-medium tracking-widest animate-pulse uppercase text-sm font-bold">
+                  Tap to open letter
+                </p>
               </div>
-              <p className="text-2xl font-bold text-pink-600 italic">For Someone Special</p>
-            </div>
-          </div>
-          <p className="mt-10 text-pink-400 font-medium tracking-widest animate-pulse uppercase text-sm font-bold">Tap to open letter</p>
-        </div>
-      )}
+            )}
 
-      {/* Stage 2: Reasons Slideshow */}
-      {stage === 'reasons' && (
-        <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center relative z-10 animate-in fade-in slide-in-from-right-10 border-t-8 border-pink-400">
-          <div className="flex justify-center mb-8">
-            <div className="p-5 bg-pink-50 rounded-2xl animate-spin-slow">
-              {reasons[reasonIndex].icon}
-            </div>
-          </div>
-          <p className="text-2xl font-medium text-gray-700 leading-relaxed mb-10 h-32 flex items-center justify-center">
-            "{reasons[reasonIndex].text}"
-          </p>
-          <button
-            onClick={nextReason}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl text-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 group active:scale-95"
-          >
-            {reasonIndex === reasons.length - 1 ? "I have a question..." : "Next Reason"}
-            <Icon name="chevronRight" className="group-hover:translate-x-1 transition-transform" size={20} />
-          </button>
-          <div className="mt-6 flex justify-center gap-2">
-            {reasons.map((_, i) => (
-              <div key={i} className={`h-2 rounded-full transition-all ${i === reasonIndex ? 'w-8 bg-pink-400' : 'w-2 bg-pink-100'}`} />
-            ))}
-          </div>
-        </div>
-      )}
+            {/* Stage 2: Reasons Slideshow */}
+            {stage === "reasons" && (
+              <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center relative z-10 border-t-8 border-pink-400">
+                <div className="flex justify-center mb-8">
+                  <div className="p-5 bg-pink-50 rounded-2xl animate-spin-slow">
+                    {reasons[reasonIndex].icon}
+                  </div>
+                </div>
+                <p className="text-2xl font-medium text-gray-700 leading-relaxed mb-10 h-32 flex items-center justify-center">
+                  "{reasons[reasonIndex].text}"
+                </p>
+                <button
+                  onClick={nextReason}
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl text-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 group active:scale-95"
+                >
+                  {reasonIndex === reasons.length - 1
+                    ? "I have a question..."
+                    : "Next Reason"}
+                  <Icon
+                    name="chevronRight"
+                    className="group-hover:translate-x-1 transition-transform"
+                    size={20}
+                  />
+                </button>
+                <div className="mt-6 flex justify-center gap-2">
+                  {reasons.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-2 rounded-full transition-all ${
+                        i === reasonIndex ? "w-8 bg-pink-400" : "w-2 bg-pink-100"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-      {/* Stage 3: The Big Question */}
-      {stage === 'proposing' && (
-        <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center relative z-10 animate-in zoom-in duration-500 border-b-8 border-pink-500">
-          <Icon name="heart" size={100} fill="#ff4d6d" color="#ff4d6d" className="mx-auto mb-6 animate-pulse" />
-          <h1 className="text-3xl font-black text-gray-800 mb-6 italic">So, my dearest...</h1>
-          <p className="text-4xl font-black text-pink-500 mb-12 leading-tight">Will you be my <span className="underline decoration-wavy decoration-yellow-400">Forever?</span> 💍</p>
+            {/* Stage 3: The Big Question */}
+            {stage === "proposing" && (
+              <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center relative z-10 border-b-8 border-pink-500">
+                <Icon
+                  name="heart"
+                  size={100}
+                  fill="#ff4d6d"
+                  color="#ff4d6d"
+                  className="mx-auto mb-6 animate-pulse"
+                />
+                <h1 className="text-3xl font-black text-gray-800 mb-6 italic">
+                  So, my dearest...
+                </h1>
+                <p className="text-4xl font-black text-pink-500 mb-12 leading-tight">
+                  Will you be my{" "}
+                  <span className="underline decoration-wavy decoration-yellow-400">
+                    Forever?
+                  </span>{" "}
+                  💍
+                </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button
-              onClick={() => setStage('accepted')}
-              className="bg-pink-500 hover:bg-pink-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-xl transition-all hover:scale-110 active:scale-95"
-            >
-              YES!
-            </button>
-            <button
-              onMouseEnter={handleNoInteraction}
-              onClick={handleNoInteraction}
-              style={isNoMoving ? {
-                position: 'fixed',
-                left: `${noButtonPos.x}px`,
-                top: `${noButtonPos.y}px`,
-                transform: `scale(${Math.max(0.5, 1 - noCount * 0.05)})`,
-                opacity: Math.max(0.3, 1 - noCount * 0.1),
-                transition: 'all 0.15s ease-out',
-                zIndex: 100
-              } : {}}
-              className="bg-gray-100 text-gray-400 px-8 py-4 rounded-full text-lg font-bold transition-all shadow-sm"
-            >
-              {noMessages[Math.min(noCount, noMessages.length - 1)]}
-            </button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                  <button
+                    onClick={() => setStage("accepted")}
+                    className="bg-pink-500 hover:bg-pink-600 text-white px-12 py-5 rounded-full text-2xl font-black shadow-xl transition-all hover:scale-110 active:scale-95"
+                  >
+                    YES!
+                  </button>
+                  <button
+                    onMouseEnter={handleNoInteraction}
+                    onClick={handleNoInteraction}
+                    style={
+                      isNoMoving
+                        ? {
+                            position: "fixed",
+                            left: `${noButtonPos.x}px`,
+                            top: `${noButtonPos.y}px`,
+                            transform: `scale(${Math.max(
+                              0.5,
+                              1 - noCount * 0.05
+                            )})`,
+                            opacity: Math.max(0.3, 1 - noCount * 0.1),
+                            transition: "all 0.15s ease-out",
+                            zIndex: 100,
+                          }
+                        : {}
+                    }
+                    className="bg-gray-100 text-gray-400 px-8 py-4 rounded-full text-lg font-bold transition-all shadow-sm"
+                  >
+                    {noMessages[Math.min(noCount, noMessages.length - 1)]}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Stage 4: Celebration */}
+            {stage === "accepted" && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#fff0f3]">
+                <div className="text-center p-10 max-w-xl bg-white/80 backdrop-blur-md rounded-[4rem] shadow-2xl border-4 border-white">
+                  <div className="flex justify-center gap-4 mb-6">
+                    <Icon
+                      name="stars"
+                      className="text-yellow-400 animate-pulse"
+                      size={48}
+                    />
+                    <Icon
+                      name="heart"
+                      size={120}
+                      fill="#ff4d6d"
+                      color="#ff4d6d"
+                      className="animate-bounce"
+                    />
+                    <Icon
+                      name="stars"
+                      className="text-yellow-400 animate-pulse"
+                      size={48}
+                    />
+                  </div>
+                  <h1 className="text-7xl font-black text-pink-600 mb-6 tracking-tighter">
+                    OMG YESSS! 🎉
+                  </h1>
+                  <p className="text-3xl text-pink-500 font-bold mb-8 italic text-center">
+                    I'm the luckiest person in the world! 🌎✨
+                  </p>
+                  <div className="py-6 px-10 bg-pink-500 text-white rounded-3xl font-bold text-2xl rotate-2 shadow-lg inline-block">
+                    YOU &amp; ME FOREVER ❤️
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      };
 
-      {/* Stage 4: Celebration */}
-      {stage === 'accepted' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#fff0f3] animate-in fade-in duration-1000">
-          <div className="text-center p-10 max-w-xl bg-white/80 backdrop-blur-md rounded-[4rem] shadow-2xl border-4 border-white">
-            <div className="flex justify-center gap-4 mb-6">
-                <Icon name="stars" className="text-yellow-400 animate-pulse" size={48} />
-                <Icon name="heart" size={120} fill="#ff4d6d" color="#ff4d6d" className="animate-bounce" />
-                <Icon name="stars" className="text-yellow-400 animate-pulse" size={48} />
-            </div>
-            <h1 className="text-7xl font-black text-pink-600 mb-6 tracking-tighter">OMG YESSS! 🎉</h1>
-            <p className="text-3xl text-pink-500 font-bold mb-8 italic text-center">I'm the luckiest person in the world! 🌎✨</p>
-            <div className="py-6 px-10 bg-pink-500 text-white rounded-3xl font-bold text-2xl rotate-2 shadow-lg inline-block">
-              YOU & ME FOREVER ❤️
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<ProposalPage />);
+    </script>
+  </body>
+</html>
